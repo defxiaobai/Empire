@@ -4,6 +4,7 @@
 import urllib
 import urllib2
 import re
+import ContentTool
 
 class Empire(object):
 
@@ -13,6 +14,7 @@ class Empire(object):
         self._username = username
         self._keyword = urllib.quote(keyword)
         self._classid = classid
+        self._contentTool = ContentTool.ContentTool()
 
 
     # 获取页面内容 指定网站编码
@@ -98,7 +100,7 @@ class Empire(object):
 
     # 百度知道标题
     def zhiDaoTitle(self,page):
-        pattern = re.compile('<span class="ask-title.*?">(.*?)<img.*?>.*?</span>',re.S)
+        pattern = re.compile('<span class="ask-title.*?">(.*?)</span>')
         result = re.search(pattern,page)
         if not result:
             return None
@@ -108,17 +110,28 @@ class Empire(object):
 
     # 百度知道问答答案
     def zhiDaoAnswer(self,page):
-        pass
+        pattern = re.compile('<div class="line content">.*?(.*?)</div>',re.S)
+        items = re.findall(pattern,page)
+        content = ''
+        if not items:
+            print u'没有匹配到内容'
+            return None
+        else:
+            for item in items:
+                content += self._contentTool.replace(item) + '---'
+            return content
 
-    # 获取内容
+    # 获取内容 标题和问答内容
     def zhiDaoContent(self,urls):
         for k,v in enumerate(urls):
-            print '准备抓取第'+ str(k) +'页链接的内容'
+            i = 0
             for url in v:
+                i = i + 1
+                print '抓取第'+ str(k+1) +'页第'+ str(i)+'条链接'
                 page = self.get_page(url,'gbk')
                 title = self.zhiDaoTitle(page)
-                print title
-                exit()
+                content = self.zhiDaoAnswer(page)
+
 
 
 
