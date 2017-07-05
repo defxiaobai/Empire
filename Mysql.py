@@ -7,7 +7,7 @@ class tomsql(object):
 
     def __init__(self):
         try:
-            self._db = MySQLdb.connect(host='localhost',user='root',passwd='aliexpress',db='doubanxiaoshuo',charset='utf8')
+            self._db = MySQLdb.connect(host='localhost',user='root',passwd='Aliexpress',db='taiyang',charset='utf8')
             self._cursor = self._db.cursor()
         except MySQLdb.Error as e:
             print(self.getCurrentTime(),'链接数据库失败，原因%d：%s'%(e.args[0],e.args[1]))
