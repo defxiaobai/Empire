@@ -8,9 +8,10 @@ import ContentTool
 
 class TouTiao(object):
 
-    # 采集关键词对应的文章和要采集的数量
+    # 采集关键词对应的关键词和要采集的数量
     def __init__(self,keyword,num):
-        self._url = 'http://www.toutiao.com/search_content/?offset=0&format=json&keyword='+keyword+'&autoload=true&count='+str(num)+'&cur_tab=1'
+        self._keyword = keyword
+        self._num = num
         self._contentTool = ContentTool.ContentTool()
 
     # 获取页面内容 指定网站编码
@@ -30,8 +31,7 @@ class TouTiao(object):
             return page.read().decode(charcode)
 
     # 获取头条文章链接
-    def touTiaoUrls(self):
-        page = self.get_page(self._url,'utf-8')
+    def touTiaoUrls(self,page):
         s = json.loads(page)
         datas = s['data']
         urls = []
@@ -39,9 +39,9 @@ class TouTiao(object):
            if data.has_key('cell_type'):
                continue
            url = data['share_url']
-           print url
            urls.append(url)
         return urls
+
     # 获取头条标题
     def touTiaoTitle(self,page):
         pattern = re.compile('<h1 class="article-title">(.*?)</h1>')
@@ -68,8 +68,7 @@ class TouTiao(object):
         return self._contentTool.replaceNoImg(result.group(1).strip())
 
     # 获取链接标题和文章内容
-    def touTiaoContent(self):
-        urls = self.touTiaoUrls()
+    def touTiaoContent(self,urls):
         for url in urls:
             print url
             page = self.get_page(url,'utf-8')
@@ -80,5 +79,15 @@ class TouTiao(object):
             print title,content
 
 
+
+    # 抓取头条
+    def grapTouTiao(self):
+        url = 'http://www.toutiao.com/search_content/?offset=0&format=json&keyword=' + self._keyword + '&autoload=true&count=' + str(self._num) + '&cur_tab=1'
+        page = self.get_page(url, 'utf-8')
+        urls = self.touTiaoUrls(page)
+        if not urls:
+            print u'没有获取到内容的链接'
+        self.touTiaoContent(urls)
+
 touTiao = TouTiao('太阳城',500)
-touTiao.touTiaoContent()
+touTiao.grapTouTiao()
