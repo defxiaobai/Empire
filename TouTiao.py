@@ -69,16 +69,20 @@ class TouTiao(object):
 
     # 获取链接标题和文章内容
     def touTiaoContent(self,urls):
+        contents = []
         for url in urls:
-            print url
+            print u'抓取' + url
             page = self.get_page(url,'utf-8')
+            # 如果没有获取到页面，则跳过
+            if not page:
+                continue
             title = self.touTiaoTitle(page)
             content = self.touTiaoText(page)
             if not content:
+                print '没有采集到文章'
                 continue
-            print title,content
-
-
+            contents.append({'title':title,'content':content,'url':url})
+        return contents
 
     # 抓取头条
     def grapTouTiao(self):
@@ -87,7 +91,4 @@ class TouTiao(object):
         urls = self.touTiaoUrls(page)
         if not urls:
             print u'没有获取到内容的链接'
-        self.touTiaoContent(urls)
-
-touTiao = TouTiao('太阳城',500)
-touTiao.grapTouTiao()
+        return self.touTiaoContent(urls)

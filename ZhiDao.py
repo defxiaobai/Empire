@@ -26,7 +26,7 @@ class ZhiDao(object):
                 print '获取页面错误，错误代码：%s' % e.code
                 return None
         else:
-            return page.read().decode(charcode)
+            return page.read().decode(charcode,'ignore').encode('utf-8')
 
     # 返回百度知道的总页数
     def zhiDaoTotalPage(self, page):
@@ -117,16 +117,26 @@ class ZhiDao(object):
             return content
 
     # 获取内容 标题和问答内容
-    def zhiDaoContent(self, urls):
+    def zhiDaoContent(self, urls,startPage):
+        contents = []
         for k, v in enumerate(urls):
             i = 0
+            if not v:
+                print '采集到的urls为空'
+                continue
             for url in v:
                 i = i + 1
-                print '抓取第' + str(k + 1) + '页第' + str(i) + '条链接'
+                print '抓取第' + str(k + startPage) + '页第' + str(i) + '条链接'
                 page = self.get_page(url, 'gbk')
+                if not page:
+                    continue
+                page = self._contentTool.pageReplace(page)
                 title = self.zhiDaoTitle(page)
                 content = self.zhiDaoAnswer(page)
-                print title,content
+                if not content:
+                    continue
+                contents.append({'title':title,'content':content,'url':url})
+        return contents
 
     # 抓取百度知道的内容,指定第几页开始抓取
     def grabZhiDao(self,startPage = 1):
@@ -137,7 +147,4 @@ class ZhiDao(object):
         if not urls:
             print u'没有获取到内容链接'
         else:
-            self.zhiDaoContent(urls)
-
-zd = ZhiDao('北京太阳城')
-zd.grabZhiDao()
+            return self.zhiDaoContent(urls,startPage)
