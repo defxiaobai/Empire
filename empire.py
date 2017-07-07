@@ -10,6 +10,7 @@ import TouTiao
 import ZhiDao
 from itertools import chain
 import sys
+import math
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -37,22 +38,24 @@ class Empire(object):
         tt = self.Mysqldb.queryData('toutiao')
         for index,zddata in enumerate(zd):
             if index < len(tt):
-               ttile = ''
                tcontents = []
-               title = tt[index][0]
-               content = tt[index][1]
-               if u'，' in title:
-                   ttile = title.split(u'，')[0]
-               elif ' ' in title:
-                   ttile = title.split(' ')[0]
+               ttTitle = tt[index][0]
+               ttContent = tt[index][1]
+               if u'，' in ttTitle:
+                   ttile = ttTitle.split(u'，')[0]
+               elif ' ' in ttTitle:
+                   ttile = ttTitle.split(' ')[0]
                else:
-                   ttile = title
-               conts = content.split('\n')
-               num = len(conts) // 6
-               if num == 0:
-                   tcontents.append(content)
+                   # 截取10个字符串
+                   ttile = ttTitle[0:10]
+               conts = ttContent.split('\n')
+               num = int(math.ceil(len(conts) / 6))
+               print num
 
-               for x in range(0,num):
+               if num == 0:
+                   tcontents.append(ttContent)
+
+               for x in range(0,num+1):
                   tconts = []
                   if(x+1)*6 > len(conts):
                       last = len(conts)
@@ -63,7 +66,6 @@ class Empire(object):
                     cont = conts[idx]
                     tconts.append(cont)
                   tcontents.append(''.join(tconts))
-
             else:
                 ttile = ''
                 tcontents = []
@@ -78,9 +80,7 @@ class Empire(object):
             print mixtitle
             print '内容：\n'
             print mixcontent
-            self.postData(mixtitle,mixcontent)
-
-
+            # self.postData(mixtitle,mixcontent)
 
     # 登陆
     def postData(self,title,text):

@@ -4,15 +4,19 @@ import urllib2
 import json
 import re
 import ContentTool
+import urllib
+
 
 
 class TouTiao(object):
 
     # 采集关键词对应的关键词和要采集的数量
-    def __init__(self,keyword,num):
-        self._keyword = keyword
+    def __init__(self,keyword,num,offset = 0):
+        self._keyword = urllib.quote(keyword)
         self._num = num
         self._contentTool = ContentTool.ContentTool()
+        self._offset = offset
+        self._urls = []
 
     # 获取页面内容 指定网站编码
     def get_page(self, url, charcode):
@@ -34,13 +38,21 @@ class TouTiao(object):
     def touTiaoUrls(self,page):
         s = json.loads(page)
         datas = s['data']
-        urls = []
+        hasmore = s['has_more']
         for data in datas:
            if data.has_key('cell_type'):
                continue
            url = data['share_url']
-           urls.append(url)
-        return urls
+           self._urls.append(url)
+        if hasmore == 1:
+            self._offset += 20
+            url = 'http://www.toutiao.com/search_content/?offset=' + str(
+                self._offset) + '&format=json&keyword=' + self._keyword + '&autoload=true&count=' + str(
+                self._num) + '&cur_tab=1'
+            page = self.get_page(url,'utf-8')
+            self.touTiaoUrls(page)
+        if hasmore == 0:
+            return None
 
     # 获取头条标题
     def touTiaoTitle(self,page):
@@ -86,9 +98,14 @@ class TouTiao(object):
 
     # 抓取头条
     def grapTouTiao(self):
-        url = 'http://www.toutiao.com/search_content/?offset=0&format=json&keyword=' + self._keyword + '&autoload=true&count=' + str(self._num) + '&cur_tab=1'
+        url = 'http://www.toutiao.com/search_content/?offset='+ str(self._offset) +'&format=json&keyword=' + self._keyword + '&autoload=true&count=' + str(self._num) + '&cur_tab=1'
+        print url
         page = self.get_page(url, 'utf-8')
-        urls = self.touTiaoUrls(page)
-        if not urls:
+        self.touTiaoUrls(page)
+        if not self._urls:
             print u'没有获取到内容的链接'
-        return self.touTiaoContent(urls)
+            exit()
+        return self.touTiaoContent(self._urls)
+
+toutiao = TouTiao('太阳城',500)
+toutiao.grapTouTiao()
