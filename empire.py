@@ -5,6 +5,14 @@ import urllib
 import urllib2
 import re
 import ContentTool
+import Mysql
+import TouTiao
+import ZhiDao
+from itertools import chain
+import sys
+import math
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class Empire(object):
 
@@ -12,159 +20,76 @@ class Empire(object):
     def __init__(self,domian,username,keyword,classid):
         self._jiekouurl = 'http://' + domian + '/e/admin/jiekou.php'
         self._username = username
-        self._keyword = urllib.quote(keyword)
+        self._keyword = keyword
         self._classid = classid
-        self._contentTool = ContentTool.ContentTool()
+        self.Mysqldb = Mysql.tomsql()
 
+    def grabDatas(self):
+        # zhidao = ZhiDao.ZhiDao(self._keyword)
+        # contents = zhidao.grabZhiDao(2)
+        # self.Mysqldb.insertData('zhidao',contents)
+        toutiao = TouTiao.TouTiao('太阳城',500)
+        contents = toutiao.grapTouTiao()
+        print contents
+        self.Mysqldb.insertData('toutiao',contents)
 
-    # 获取页面内容 指定网站编码
-    def get_page(self,url,charcode):
-        header = {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.2) Gecko/2008070208 Firefox/3.0.1'}
-        try:
-            request = urllib2.Request(url,headers=header)
-            page = urllib2.urlopen(request)
-        except urllib2.URLError as e:
-            if hasattr(e,'reason'):
-                print '获取页面错误，错误原因：%s' % e.reason
-                return None
-            if hasattr(e,'code'):
-                print '获取页面错误，错误代码：%s' % e.code
-                return None
-        else:
-            return page.read().decode(charcode)
+    def mixedData(self):
+        zd = self.Mysqldb.queryData('zhidao')
+        tt = self.Mysqldb.queryData('toutiao')
+        for index,zddata in enumerate(zd):
+            if index < len(tt):
+               tcontents = []
+               ttTitle = tt[index][0]
+               ttContent = tt[index][1]
+               if u'，' in ttTitle:
+                   ttile = ttTitle.split(u'，')[0]
+               elif ' ' in ttTitle:
+                   ttile = ttTitle.split(' ')[0]
+               else:
+                   # 截取10个字符串
+                   ttile = ttTitle[0:10]
+               conts = ttContent.split('\n')
+               num = int(math.ceil(len(conts) / 6))
+               print num
 
-    #返回百度知道的总页数
-    def zhiDaoTotalPage(self,page):
-        # 判断一共有多少页内容 如果包含了最后一页 则直接读取最后一页 否则下一页之前的链接数字为总的页数
-        pattern = re.compile('<a class="pager-last" href="(.*?)">.*?</a>')
-        result = re.search(pattern, page)
-        if not result:
-            print u'不存在最后一页的链接,抓取全部分页，提取总页数'
-            # 匹配下一页之前的页数
-            pattern = re.compile(
-                '<div class="pager" alog-alias="pager">(.*?)<a class="pager-next" href=".*?">.*?</a>.*?</div>', re.S)
-            result = re.search(pattern, page)
-            if not result:
-                print u'没有匹配到下一页之前的页数'
-                return None
+               if num == 0:
+                   tcontents.append(ttContent)
+
+               for x in range(0,num+1):
+                  tconts = []
+                  if(x+1)*6 > len(conts):
+                      last = len(conts)
+                  else:
+                      last = (x+1) * 6
+
+                  for idx in range(x * 6,last):
+                    cont = conts[idx]
+                    tconts.append(cont)
+                  tcontents.append(''.join(tconts))
             else:
-                page = result.group(1).strip()
-                pattern = re.compile('<a href=".*">(.*?)</a>')
-                items = re.findall(pattern, page)
-                if not items:
-                    return None
-                else:
-                    totalPage = items.pop().strip()
-                    return totalPage
-        else:
-            lastUrl = 'https://zhidao.baidu.com' + result.group(1).strip()
-            lastPage = self.get_page(lastUrl, 'gbk')
-            pattern = re.compile('<b>(.*?)</b>')
-            result = re.se(pattern, lastPage)
-            if not result:
-                print u'错误没有匹配到最后一页'
-                return None
+                ttile = ''
+                tcontents = []
+            mixtitle = ttile + ' ' +zddata[0]
+            zcontents = zddata[1].split('---')
+            if not tcontents:
+                mixcontent = '\n'.join(zcontents)
             else:
-                totalPage = result.lastgroup.strip()
-                return totalPage
-
-    # 获取内容页的url
-    def zhiDaoContentUrls(self,page):
-        pattern = re.compile('<dl class="dl.*?".*?>.*?<dt.*?>.*?<a href="(.*?)".*?>.*?</dl>',re.S)
-        items = re.findall(pattern,page)
-        urls = []
-        if not items:
-            print u'没有找到对应的内容链接'
-            return None
-        else:
-            for item in items:
-                print item
-                urls.append(item)
-            return urls
-
-    # 获取百度知道所有的相关url
-    def zhiDaoUrls(self,page,startPage):
-        totalPage = self.zhiDaoTotalPage(page)
-        urls = []
-        if not totalPage:
-            print u'获取总页数错误'
-            return None
-
-        for n in range(int(startPage),int(totalPage) + 1):
-            print '正在抓取第'+ str(n) + '页的url'
-            url = 'https://zhidao.baidu.com/search?word=' + self._keyword + '&ie=utf-8&site=-1&sites=0&date=0&pn=' + str((n - 1) * 10)
-            page = self.get_page(url,'gbk')
-            urls.append(self.zhiDaoContentUrls(page))
-
-        return urls
-
-    # 百度知道标题
-    def zhiDaoTitle(self,page):
-        pattern = re.compile('<span class="ask-title.*?">(.*?)</span>')
-        result = re.search(pattern,page)
-        if not result:
-            return None
-        else:
-            return result.group(1).strip()
-
-
-    # 百度知道问答答案
-    def zhiDaoAnswer(self,page):
-        pattern = re.compile('<div class="line content">.*?(.*?)</div>',re.S)
-        items = re.findall(pattern,page)
-        content = ''
-        if not items:
-            print u'没有匹配到内容'
-            return None
-        else:
-            for item in items:
-                content += self._contentTool.replace(item) + '---'
-            return content
-
-    # 获取内容 标题和问答内容
-    def zhiDaoContent(self,urls):
-        for k,v in enumerate(urls):
-            i = 0
-            for url in v:
-                i = i + 1
-                print '抓取第'+ str(k+1) +'页第'+ str(i)+'条链接'
-                page = self.get_page(url,'gbk')
-                title = self.zhiDaoTitle(page)
-                content = self.zhiDaoAnswer(page)
-
-
-
-
-    # 抓取百度知道的内容,指定第几页开始抓取
-    def grabZhiDao(self,startPage = 1):
-        startPage = int(startPage)
-        url = 'https://zhidao.baidu.com/search?word='+ self._keyword +'&ie=utf-8&site=-1&sites=0&date=0&pn=' + str((startPage -1 ) * 10)
-        print url
-        page = self.get_page(url,'gbk')
-        urls = self.zhiDaoUrls(page,startPage)
-        if not urls:
-            print u'没有获取到内容链接'
-        else:
-            self.zhiDaoContent(urls)
-
-
-
-    def grabWeiBo(self):
-        pass
-    def grabToutiao(self):
-        pass
+                mixcontents = list(chain(*zip(zcontents, tcontents)))
+                mixcontent = '\n'.join(mixcontents)
+            print '标题：\n'
+            print mixtitle
+            print '内容：\n'
+            print mixcontent
+            # self.postData(mixtitle,mixcontent)
 
     # 登陆
-    def postData(self):
+    def postData(self,title,text):
         data = urllib.urlencode({
             'username':self._username,
             'classid':self._classid,
-            'title':'this is a title',
-            'newstext':'this a news text',
-            'pw':'123456',
-            'keyboard':'keyword1,keyword2',
-            'filename':'file1',
-            'infotags':'tag1,tag2'
+            'title':title,
+            'newstext':text,
+            'pw':'123456'
 
         })
         #创建request
@@ -173,6 +98,7 @@ class Empire(object):
         if '成功' in resp.read():
             print '成功'
 
-empire = Empire('www.bayuad.com','hsmw','北京太阳城',1)
+empire = Empire('www.taiyangchengyule.cn','yeqiu','北京太阳城',3)
+empire.mixedData()
 # empire.postData()
-empire.grabZhiDao()
+# empire.grabDatas()
