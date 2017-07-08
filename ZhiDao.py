@@ -135,7 +135,7 @@ class ZhiDao(object):
             if not title:
                 continue
             contents.append({'title':title,'content':content,'url':url})
-            if len(contents) == 10:
+            if len(contents) == 10 or i == len(urls) :
                 self.Mysqldb.insertData('zhidao',contents)
                 print '插入链接' + url +'的数据'
                 contents = []
