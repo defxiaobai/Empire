@@ -77,7 +77,10 @@ class TouTiao(object):
             if not result:
                 return None
             return self._contentTool.replaceNoImg(result.group(1).strip())
-        return self._contentTool.replaceNoImg(result.group(1).strip())
+        content = self._contentTool.replaceNoImg(result.group(1).strip())
+        p = re.compile('\n\n',re.S)
+        content = '---'.join(p.split(content))
+        return content
 
     # 获取链接标题和文章内容
     def touTiaoContent(self,urls):
@@ -99,7 +102,6 @@ class TouTiao(object):
     # 抓取头条
     def grapTouTiao(self):
         url = 'http://www.toutiao.com/search_content/?offset='+ str(self._offset) +'&format=json&keyword=' + self._keyword + '&autoload=true&count=' + str(self._num) + '&cur_tab=1'
-        print url
         page = self.get_page(url, 'utf-8')
         self.touTiaoUrls(page)
         if not self._urls:
@@ -107,5 +109,6 @@ class TouTiao(object):
             exit()
         return self.touTiaoContent(self._urls)
 
-toutiao = TouTiao('太阳城',500)
-toutiao.grapTouTiao()
+# toutiao = TouTiao('太阳城',500)
+# page = toutiao.get_page('http://www.toutiao.com/a6439166617712574721/','utf-8')
+# toutiao.touTiaoText(page)

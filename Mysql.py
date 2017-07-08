@@ -9,7 +9,7 @@ class tomsql(object):
         try:
             self._db = MySQLdb.connect(host='127.0.0.1',user='root',passwd='Aliexpress',db='taiyang',charset='utf8', port=3306)
             self._cursor = self._db.cursor()
-            print self._cursor
+
         except MySQLdb.Error as e:
             print(self.getCurrentTime(),'链接数据库失败，原因%d：%s'%(e.args[0],e.args[1]))
 
@@ -21,6 +21,9 @@ class tomsql(object):
             if not my_dict:
                 continue
             keys = ','.join(my_dict.keys())
+            if not my_dict.values():
+                continue
+            print my_dict.values()
             values = '","'.join(my_dict.values())
             sql = "insert into %s (%s) values (%s)" % (table,keys,'"'+values+'"')
             try:

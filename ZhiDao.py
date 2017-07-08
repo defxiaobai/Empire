@@ -55,32 +55,32 @@ class ZhiDao(object):
             lastUrl = 'https://zhidao.baidu.com' + result.group(1).strip()
             lastPage = self.get_page(lastUrl, 'gbk')
             pattern = re.compile('<b>(.*?)</b>')
-            result = re.se(pattern, lastPage)
+            result = re.search(pattern, lastPage)
             if not result:
                 print u'错误没有匹配到最后一页'
                 return None
             else:
-                totalPage = result.lastgroup.strip()
+                totalPage = result.group(1).strip()
                 return totalPage
 
     # 获取内容页的url
     def zhiDaoContentUrls(self, page):
         pattern = re.compile('<dl class="dl.*?".*?>.*?<dt.*?>.*?<a href="(.*?)".*?>.*?</dl>', re.S)
         items = re.findall(pattern, page)
-        urls = []
+        f = open('zdurls.txt', 'a')
         if not items:
             print u'没有找到对应的内容链接'
             return None
         else:
             for item in items:
-                print item
-                urls.append(item)
-            return urls
+                print '写入url：'+ item
+                f.write(item)
+            f.close()
+
 
     # 获取百度知道所有的相关url
     def zhiDaoUrls(self, page, startPage):
         totalPage = self.zhiDaoTotalPage(page)
-        urls = []
         if not totalPage:
             print u'获取总页数错误'
             return None
@@ -90,9 +90,8 @@ class ZhiDao(object):
             url = 'https://zhidao.baidu.com/search?word=' + self._keyword + '&ie=utf-8&site=-1&sites=0&date=0&pn=' + str(
                 (n - 1) * 10)
             page = self.get_page(url, 'gbk')
-            urls.append(self.zhiDaoContentUrls(page))
+            self.zhiDaoContentUrls(page)
 
-        return urls
 
     # 百度知道标题
     def zhiDaoTitle(self, page):
@@ -119,32 +118,41 @@ class ZhiDao(object):
     # 获取内容 标题和问答内容
     def zhiDaoContent(self, urls,startPage):
         contents = []
-        for k, v in enumerate(urls):
-            i = 0
-            if not v:
-                print '采集到的urls为空'
+        i= 0
+        for url in urls:
+            i = i + 1
+            print '抓取第' + str(i) + '条链接'
+            page = self.get_page(url, 'gbk')
+            if not page:
                 continue
-            for url in v:
-                i = i + 1
-                print '抓取第' + str(k + startPage) + '页第' + str(i) + '条链接'
-                page = self.get_page(url, 'gbk')
-                if not page:
-                    continue
-                page = self._contentTool.pageReplace(page)
-                title = self.zhiDaoTitle(page)
-                content = self.zhiDaoAnswer(page)
-                if not content:
-                    continue
-                contents.append({'title':title,'content':content,'url':url})
+            page = self._contentTool.pageReplace(page)
+            title = self.zhiDaoTitle(page)
+            content = self.zhiDaoAnswer(page)
+            if not content:
+                continue
+            contents.append({'title':title,'content':content,'url':url})
         return contents
-
+    #读取文件
+    def readUrls(self):
+        try:
+            f = open('zdurls.txt','r')
+            urls = f.readlines()
+        except IOError as e:
+            print '文件读取错误，错误原因',e.args[0],e.args[1]
+        else:
+            return urls
     # 抓取百度知道的内容,指定第几页开始抓取
-    def grabZhiDao(self,startPage = 1):
+    def grabZhiDao(self,startPage = 1,fromText = 0):
         startPage = int(startPage)
         url = 'https://zhidao.baidu.com/search?word='+ self._keyword +'&ie=utf-8&site=-1&sites=0&date=0&pn=' + str((startPage -1 ) * 10)
         page = self.get_page(url,'gbk')
-        urls = self.zhiDaoUrls(page,startPage)
+        if fromText == 1:
+            urls = self.readUrls()
+            print urls
+        else:
+            urls = self.zhiDaoUrls(page,startPage)
         if not urls:
             print u'没有获取到内容链接'
+            return None
         else:
             return self.zhiDaoContent(urls,startPage)
