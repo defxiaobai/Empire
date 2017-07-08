@@ -4,6 +4,7 @@ import urllib2
 import urllib
 import re
 import ContentTool
+import Mysql
 
 
 class ZhiDao(object):
@@ -11,6 +12,7 @@ class ZhiDao(object):
     def __init__(self,keyword):
         self._contentTool = ContentTool.ContentTool()
         self._keyword = urllib.quote(keyword)
+        self.Mysqldb = Mysql.tomsql()
 
     # 获取页面内容 指定网站编码
     def get_page(self, url, charcode):
@@ -131,7 +133,11 @@ class ZhiDao(object):
             if not content:
                 continue
             contents.append({'title':title,'content':content,'url':url})
-        return contents
+            if len(contents) == 10:
+                self.Mysqldb.insertData('zhidao',contents)
+                print '插入链接' + url +'的数据'
+                contents = []
+
     #读取文件
     def readUrls(self):
         try:
@@ -155,4 +161,4 @@ class ZhiDao(object):
             print u'没有获取到内容链接'
             return None
         else:
-            return self.zhiDaoContent(urls,startPage)
+            self.zhiDaoContent(urls,startPage)

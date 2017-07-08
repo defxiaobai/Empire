@@ -25,12 +25,12 @@ class Empire(object):
         self._username = username
         self._keyword = keyword
         self._classid = classid
-        self.Mysqldb = Mysql.tomsql()
+
 
     def grabDatas(self):
         zhidao = ZhiDao.ZhiDao(self._keyword)
-        contents = zhidao.grabZhiDao(1,1)
-        self.Mysqldb.insertData('zhidao',contents)
+        zhidao.grabZhiDao(1,1)
+
         # toutiao = TouTiao.TouTiao('太阳城',500)
         # contents = toutiao.grapTouTiao()
         # print contents
