@@ -156,7 +156,6 @@ class ZhiDao(object):
         page = self.get_page(url,'gbk')
         if fromText == 1:
             urls = self.readUrls()
-            print urls
         else:
             urls = self.zhiDaoUrls(page,startPage)
         if not urls:
