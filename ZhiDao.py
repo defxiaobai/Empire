@@ -132,6 +132,8 @@ class ZhiDao(object):
             content = self.zhiDaoAnswer(page)
             if not content:
                 continue
+            if not title:
+                continue
             contents.append({'title':title,'content':content,'url':url})
             if len(contents) == 10:
                 self.Mysqldb.insertData('zhidao',contents)
