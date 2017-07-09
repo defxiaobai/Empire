@@ -43,6 +43,5 @@ class ContentTool(object):
         x = re.sub(self.replaceTD, "\t", x)
         x = re.sub(self.replacePara, "\n    ", x)
         x = re.sub(self.replaceBR, "\n", x)
-        x = re.sub(self.removeExtraTag, "", x)
         # strip()将前后多余内容删除
         return x.strip()

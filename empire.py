@@ -13,6 +13,9 @@ import sys
 import math
 reload(sys)
 sys.setdefaultencoding('utf-8')
+import httplib
+httplib.HTTPConnection._http_vsn = 10
+httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
 class Empire(object):
 
@@ -22,65 +25,32 @@ class Empire(object):
         self._username = username
         self._keyword = keyword
         self._classid = classid
-        self.Mysqldb = Mysql.tomsql()
+
 
     def grabDatas(self):
-        # zhidao = ZhiDao.ZhiDao(self._keyword)
-        # contents = zhidao.grabZhiDao(2)
-        # self.Mysqldb.insertData('zhidao',contents)
-        toutiao = TouTiao.TouTiao('太阳城',500)
-        contents = toutiao.grapTouTiao()
-        print contents
-        self.Mysqldb.insertData('toutiao',contents)
+        zhidao = ZhiDao.ZhiDao(self._keyword)
+        zhidao.grabZhiDao(1,1)
+
+        # toutiao = TouTiao.TouTiao('太阳城',500)
+        # contents = toutiao.grapTouTiao()
+        # print contents
+        # self.Mysqldb.insertData('toutiao',contents)
 
     def mixedData(self):
+        p = re.compile('---',re.S)
         zd = self.Mysqldb.queryData('zhidao')
         tt = self.Mysqldb.queryData('toutiao')
-        for index,zddata in enumerate(zd):
+        for index,zdData in enumerate(zd):
+            zdTitle = zdData[0]
+            zdAnswer = zdData[1]
+            answers = p.split(zdAnswer)
+            # for answer in answers:
+            #     print answer
+            #     print '-----'
             if index < len(tt):
-               tcontents = []
-               ttTitle = tt[index][0]
-               ttContent = tt[index][1]
-               if u'，' in ttTitle:
-                   ttile = ttTitle.split(u'，')[0]
-               elif ' ' in ttTitle:
-                   ttile = ttTitle.split(' ')[0]
-               else:
-                   # 截取10个字符串
-                   ttile = ttTitle[0:10]
-               conts = ttContent.split('\n')
-               num = int(math.ceil(len(conts) / 6))
-               print num
-
-               if num == 0:
-                   tcontents.append(ttContent)
-
-               for x in range(0,num+1):
-                  tconts = []
-                  if(x+1)*6 > len(conts):
-                      last = len(conts)
-                  else:
-                      last = (x+1) * 6
-
-                  for idx in range(x * 6,last):
-                    cont = conts[idx]
-                    tconts.append(cont)
-                  tcontents.append(''.join(tconts))
-            else:
-                ttile = ''
-                tcontents = []
-            mixtitle = ttile + ' ' +zddata[0]
-            zcontents = zddata[1].split('---')
-            if not tcontents:
-                mixcontent = '\n'.join(zcontents)
-            else:
-                mixcontents = list(chain(*zip(zcontents, tcontents)))
-                mixcontent = '\n'.join(mixcontents)
-            print '标题：\n'
-            print mixtitle
-            print '内容：\n'
-            print mixcontent
-            # self.postData(mixtitle,mixcontent)
+                ttTitle = tt[index][0]
+                ttContent = tt[index][1]
+                ttConts = p.split(ttContent)
 
     # 登陆
     def postData(self,title,text):
@@ -98,7 +68,7 @@ class Empire(object):
         if '成功' in resp.read():
             print '成功'
 
-empire = Empire('www.taiyangchengyule.cn','yeqiu','北京太阳城',3)
-empire.mixedData()
-# empire.postData()
-# empire.grabDatas()
+empire = Empire('www.taiyangchengyule.cn','yeqiu','郑州太阳城',3)
+# empire.mixedData()
+# # empire.postData()
+empire.grabDatas()
