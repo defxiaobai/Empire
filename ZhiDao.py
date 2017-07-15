@@ -77,6 +77,7 @@ class ZhiDao(object):
             for item in items:
                 print '写入url：'+ item
                 f.write(item)
+                f.write('\n')
             f.close()
 
 
@@ -135,9 +136,10 @@ class ZhiDao(object):
             if not title:
                 continue
             contents.append({'title':title,'content':content,'url':url})
+            print content
             if len(contents) == 10 or i == len(urls) :
                 self.Mysqldb.insertData('zhidao',contents)
-                print '插入链接' + url +'的数据'
+                print '插入链接  的数据'
                 contents = []
 
     #读取文件
