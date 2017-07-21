@@ -30,11 +30,23 @@ class ZhiDao(object):
         else:
             return page.read().decode(charcode,'ignore').encode('utf-8')
 
+    #通过lastpage获取总的totalPages
+    def last_page(self,lastUrl):
+        lastPage = self.get_page(lastUrl, 'gbk')
+        pattern = re.compile('<b>(.*?)</b>')
+        result = re.search(pattern, lastPage)
+        if not result:
+            print u'错误没有匹配到最后一页'
+            return None
+        else:
+            totalPage = result.group(1).strip()
+            return totalPage
+
     # 返回百度知道的总页数
     def zhiDaoTotalPage(self, page):
         # 判断一共有多少页内容 如果包含了最后一页 则直接读取最后一页 否则下一页之前的链接数字为总的页数
-        pattern = re.compile('<a class="pager-last" href="(.*?)">.*?</a>')
-        result = re.search(pattern, page)
+        lastPattern = re.compile('<a class="pager-last" href="(.*?)">.*?</a>')
+        result = re.search(lastPattern, page)
         if not result:
             print u'不存在最后一页的链接,抓取全部分页，提取总页数'
             # 匹配下一页之前的页数
@@ -51,20 +63,25 @@ class ZhiDao(object):
                 if not items:
                     return None
                 else:
-                    totalPage = items.pop().strip()
-                    return totalPage
+                    preNum = items.pop().strip()
+                    if int(preNum) > 9:
+                        url = 'https://zhidao.baidu.com/search?word=' + self._keyword + '&ie=utf-8&site=-1&sites=0&date=0&pn=10'
+                        page = self.get_page(url,'gbk')
+
+                        lastPattern = re.compile('<a class="pager-last" href="(.*?)">.*?</a>')
+                        result = re.search(lastPattern, page)
+                        if not result:
+                            print '没有获取尾页'
+                            totalPage = preNum
+                            return totalPage
+                        else:
+                            lastUrl = 'https://zhidao.baidu.com'+result.group(1).strip()
+                            return self.last_page(lastUrl)
+
         else:
             lastUrl = 'https://zhidao.baidu.com' + result.group(1).strip()
-            lastPage = self.get_page(lastUrl, 'gbk')
-            pattern = re.compile('<b>(.*?)</b>')
-            result = re.search(pattern, lastPage)
-            if not result:
-                print u'错误没有匹配到最后一页'
-                return None
-            else:
-                totalPage = result.group(1).strip()
-                return totalPage
-
+            totalPage = self.last_page(lastUrl)
+            return totalPage
     # 获取内容页的url
     def zhiDaoContentUrls(self, page):
         pattern = re.compile('<dl class="dl.*?".*?>.*?<dt.*?>.*?<a href="(.*?)".*?>.*?</dl>', re.S)
@@ -84,6 +101,7 @@ class ZhiDao(object):
     # 获取百度知道所有的相关url
     def zhiDaoUrls(self, page, startPage):
         totalPage = self.zhiDaoTotalPage(page)
+        print '一共多少页面：'+ totalPage
         if not totalPage:
             print u'获取总页数错误'
             return None

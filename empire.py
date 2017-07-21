@@ -30,7 +30,7 @@ class Empire(object):
 
     def grabDatas(self):
         zhidao = ZhiDao.ZhiDao(self._keyword)
-        zhidao.grabZhiDao(1,1)
+        zhidao.grabZhiDao(1,0)
 
         # toutiao = TouTiao.TouTiao('天津太阳城',500,20)
         # toutiao.grapTouTiao()
@@ -71,7 +71,7 @@ class Empire(object):
             'title':title,
             'newstext':text,
             'keyboard':title,
-            'infotags':'太阳城娱乐,天津太阳城',
+            'infotags':'太阳城娱乐,沈阳太阳城',
             'pw':'123456'
 
 
@@ -82,8 +82,8 @@ class Empire(object):
         if '成功' in resp.read():
             print '成功'
 
-empire = Empire('www.taiyangchengyule.cn','yeqiu','天津太阳城',3)
-# empire.grabDatas()
+empire = Empire('www.taiyangchengyule.cn','yeqiu','沈阳太阳城',3)
+empire.grabDatas()
 # # empire.postData()
 # empire.grabDatas()
-empire.mixedData()
+# empire.mixedData()

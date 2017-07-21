@@ -36,5 +36,5 @@ def get_urls(page):
             for item in items:
                print '<a href="'+item+'">'+item+'</a>'
 
-page = get_page('http://www.taiyangchengyule.cn/sitemap.html','utf-8')
+page = get_page('http://www.bayuad.com/sitemap.html','utf-8')
 get_urls(page)
