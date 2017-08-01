@@ -19,16 +19,32 @@ def get_page(url, charcode):
     else:
         return page.read().decode(charcode)
 
+def get_content(url):
+    page = get_page(url,'gbk')
+    pattern = re.compile('<div class="font_14" style="line-height:180%;">(.*?)</div>',re.S)
+    result = re.search(pattern,page)
+    if not result:
+        print None
+    else:
+        print result.group(1).strip()
+
+# 获取urls
 def get_urls(start,end):
     url = 'http://www.tqcp.net/index.php?m=content&c=index&a=lists&catid=6&page='
     for x in range(start,end+1):
         url = url + str(x)
         page = get_page(url,'gbk')
-        pattern = re.compile('<ul class="font_14">(.*?)</ul>',re.S)
-        print page
-        items = re.findall(pattern,page)
-        for item in items:
-            print item
+        pattern = re.compile('<div class="General_News">(.*?)<div class="Content_shixian">',re.S)
+        result = re.search(pattern,page)
+        if not result:
+            print None
+        else:
+            pattern = re.compile('<a target=_blank href="(.*?)">.*?</a>')
+            items = re.findall(pattern,result.group(1).strip())
+            for item in items:
+                get_content(item)
+                exit()
+            print '-------'
 
 
 get_urls(1,2)
