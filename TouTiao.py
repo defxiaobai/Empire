@@ -5,6 +5,7 @@ import json
 import re
 import ContentTool
 import urllib
+import Mysql
 
 
 
@@ -17,6 +18,7 @@ class TouTiao(object):
         self._contentTool = ContentTool.ContentTool()
         self._offset = offset
         self._urls = []
+        self.Mysqldb = Mysql.tomsql()
 
     # 获取页面内容 指定网站编码
     def get_page(self, url, charcode):
@@ -85,7 +87,9 @@ class TouTiao(object):
     # 获取链接标题和文章内容
     def touTiaoContent(self,urls):
         contents = []
+        i = 0
         for url in urls:
+            i = i + 1
             print u'抓取' + url
             page = self.get_page(url,'utf-8')
             # 如果没有获取到页面，则跳过
@@ -97,7 +101,10 @@ class TouTiao(object):
                 print '没有采集到文章'
                 continue
             contents.append({'title':title,'content':content,'url':url})
-        return contents
+            if len(contents) == 10 or i == len(urls):
+                self.Mysqldb.insertData('toutiao', contents)
+                print '插入链接数据'
+                contents = []
 
     # 抓取头条
     def grapTouTiao(self):
@@ -107,7 +114,7 @@ class TouTiao(object):
         if not self._urls:
             print u'没有获取到内容的链接'
             exit()
-        return self.touTiaoContent(self._urls)
+        self.touTiaoContent(self._urls)
 
 # toutiao = TouTiao('太阳城',500)
 # page = toutiao.get_page('http://www.toutiao.com/a6439166617712574721/','utf-8')
