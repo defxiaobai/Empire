@@ -36,6 +36,7 @@ def get_content(url):
     else:
         content = result.group(1).strip()
         text = tentTool.remove_tags(content)
+        print text
         # print content
     pattern = re.compile('<div class="font_22 font_b" align="center">(.*?)</div>')
     result = re.search(pattern,page)
@@ -49,6 +50,7 @@ def get_content(url):
         smalltext = ''
     else:
         smalltext = result.group(1).strip()
+
     postData(title,smalltext,text,title)
 
 
@@ -57,11 +59,11 @@ def postData(title, smalltext, text, keyboard):
     jiekou = 'http://www.jdms8.com/e/admin/jiekou.php'
     data = urllib.urlencode({
         'username': 'yeqiu',
-        'classid': 1,
+        'classid': 2,
         'title': title,
         'keyboard': keyboard,
         'smalltext': smalltext,
-        'infotags': '南国特区彩票,特区彩票七星彩论坛',
+        'infotags': '南国彩票,南国彩票七星彩论坛',
         'newstext': text,
         'pw': '123456'
 
@@ -91,4 +93,4 @@ def get_urls(start,end):
             print '-------'
 
 
-get_urls(1,2)
+get_urls(4,5)
