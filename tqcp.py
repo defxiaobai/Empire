@@ -63,7 +63,7 @@ def postData(title, smalltext, text, keyboard):
         'title': title,
         'keyboard': keyboard,
         'smalltext': smalltext,
-        'infotags': '南国彩票,南国彩票七星彩论坛',
+        'infotags': '特区彩票七星彩论坛,南国彩票七星彩论坛',
         'newstext': text,
         'pw': '123456'
 
@@ -93,4 +93,4 @@ def get_urls(start,end):
             print '-------'
 
 
-get_urls(4,5)
+get_urls(6,6)
