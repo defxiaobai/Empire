@@ -8,7 +8,7 @@ class TentTool(object):
     spanPattern = re.compile('<span.*?>|</span>')
     h1Pattern = re.compile('<h1.*?>')
     figurePattern = re.compile('<figure.*?>|</figure>')
-    # wordPattern = re.compile(u'彩票')
+    wordPattern = re.compile(u'彩票')
     # 删除超链接标签
     removeAddr = re.compile('<a.*?>|</a>')
     figcaptionPattern = re.compile('<figcaption.*?>|</figcaption>')
@@ -21,7 +21,7 @@ class TentTool(object):
         content = re.sub(self.figcaptionPattern,'',content)
         content = re.sub(self.removeAddr,'',content)
         #匹配替换两个
-        # content = re.sub(self.wordPattern, '<a href="http://www.jdms8.com">特区彩票七星彩论坛</a>', content,2)
+        content = re.sub(self.wordPattern, '<a href="http://www.jdms8.com">南国特区彩票七星彩论坛</a>', content,2)
         return content
 
 

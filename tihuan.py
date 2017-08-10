@@ -10,7 +10,6 @@ def get_page( url, charcode):
     header = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.2) Gecko/2008070208 Firefox/3.0.1'}
     try:
         request = urllib2.Request(url, headers=header)
-        request.add_header('Pragma','no-cache')
         page = urllib2.urlopen(request)
     except urllib2.URLError as e:
         if hasattr(e, 'reason'):
