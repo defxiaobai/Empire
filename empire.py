@@ -12,8 +12,10 @@ from itertools import chain
 import sys
 import math
 import random
-reload(sys)
-sys.setdefaultencoding('utf-8')
+
+
+
+
 import httplib
 httplib.HTTPConnection._http_vsn = 10
 httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
