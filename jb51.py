@@ -1,14 +1,23 @@
 #/usr/local/env python
 #coding:utf-8
 import urllib2
+import urllib
 import re
+import TentTool
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class Jb51(object):
 
     def __init__(self,dir):
         self._dir = dir
         self._prefix = 'http://www.jb51.net/'
+        self._jiekouurl = 'http://www.00wangluo.com/e/admin/jiekou.php'
+        self._lmurl = 'http://www.jb51.net/hack/list171_'
+        self._username = 'yeqiu'
+        self._classid = 2
+        self._tool = TentTool.TentTool()
 
     # 获取页面内容
     def get_page(self, url):
@@ -30,7 +39,7 @@ class Jb51(object):
     def get_urls(self,start,end):
         urls = []
         for x in range(start,end+1):
-            url = 'http://www.jb51.net/os/list682_'+str(x)+'.html'
+            url = self._lmurl + str(x) +'.html'
             print url
             page = self.get_page(url)
             pattern = re.compile('<dl>.*?<dt>.*?<a href="(.*?)" target="_blank">.*?</a>.*?</dt>.*?</dl>',re.S)
@@ -47,7 +56,15 @@ class Jb51(object):
     def get_content(self,url):
         jianjie = ''
         neirong = ''
+        title = ''
         page = self.get_page(url)
+        pattern = re.compile('<h1 class="YaHei">(.*?)</h1>')
+        result = re.search(pattern,page)
+        if not result:
+            print '没有匹配到标题'
+            title = ''
+        else:
+            title = result.group(1).strip()
         pattern = re.compile('<div class="art_desc mt10">(.*?)</div>')
         result = re.search(pattern,page)
         if not result:
@@ -65,7 +82,7 @@ class Jb51(object):
         pattern = re.compile('<div class="cupage">(.*)',re.S)
         result = re.search(pattern,neirong)
         if not result:
-            print '没有匹配到'
+            print '没有匹配到内容分页'
         else:
             cupage = result.group(1).strip()
             pattern = re.compile("<a href='(.*?)'>.*?</a>")
@@ -78,9 +95,41 @@ class Jb51(object):
             if not result:
                 print '没有匹配到内容'
             else:
-                result.group(1).strip()
+                neirong = result.group(1).strip()
+        neirong = self._tool.remove_tags(neirong)
+        # print neirong
+        return {'title':title,'jianjie':jianjie,'neirong':neirong}
+
+    #发布文章
+    def post_article(self,article):
+
+        data = urllib.urlencode({
+            'username': self._username,
+            'classid': self._classid,
+            'title': article['title'],
+            'smalltext':article['jianjie'],
+            'newstext': article['neirong'],
+            'keyboard': article['title'],
+            'pw': '123456'
+
+        })
+        # 创建request
+        request = urllib2.Request(self._jiekouurl, data)
+        resp = urllib2.urlopen(request)
+        if '成功' in resp.read():
+            print '成功'
+
+    def grap_datas(self,start,end):
+        urls = self.get_urls(start,end)
+        for url in urls:
+            print url
+            article = self.get_content(url)
+            # print article
+            if article['title'] == '' or article['neirong'] == '':
+                continue
+            else:
+                self.post_article(article)
 
 
-
-jb51 = Jb51('os')
-jb51.get_content('http://www.jb51.net/os/1722.html')
+jb51 = Jb51('hack')
+jb51.grap_datas(1,2)
