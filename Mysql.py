@@ -16,10 +16,28 @@ class tomsql(object):
     def getCurrentTime(self):
         return time.strftime('[%Y-%m-%d %H:%M:%S]',time.localtime(time.time()))
 
+
+    def createTable(self,t_name):
+        sql = """CREATE TABLE """+ t_name +""" (
+                 id int(11) unsigned not null AUTO_INCREMENT,
+                 domain  CHAR(20) NOT NULL,
+                 PRIMARY KEY(id)
+                )ENGINE=INNODB DEFAULT charset = UTF8;"""
+
+        try:
+            self._cursor.execute(sql)
+        except MySQLdb.Error as e:
+            self._db.rollback()
+            if 'already exists' in e.args[1]:
+                print t_name + '的表已经存在了'
+
+
+
     def insertData(self,table,D_dict):
         for k,my_dict in enumerate(D_dict):
             if not my_dict:
                 continue
+            print my_dict
             keys = ','.join(my_dict.keys())
             if not my_dict.values():
                 continue
@@ -36,6 +54,7 @@ class tomsql(object):
                     print(self.getCurrentTime(),'数据已经存在了，未插入')
                 else:
                     print(self.getCurrentTime(),'插入数据失败，原因%d: %s' %(e.args[0],e.args[1]))
+                exit()
 
     def queryData(self,table):
         sql = 'select title,content from %s' % (table)
