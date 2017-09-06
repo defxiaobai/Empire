@@ -27,6 +27,8 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#/usr/bin/env python
+#-*-coding:utf-8-*-
 
 import sys
 import urllib
@@ -54,7 +56,7 @@ class APIService:
     'timeout' specifies the amount of time to wait before aborting the transaction. This defaults to 5 seconds. 
     """
 
-    def execute_command(self, name, parameters, timeout=5):
+    def execute_command(self, name, parameters, timeout=8):
         parameters['app_api_key'] = self.application_id
         parameters['cmd'] = name
         return self.execute_request(parameters, timeout);
@@ -75,9 +77,9 @@ class APIService:
 
     def execute_request(self, parameters, timeout):
         parameters = urllib.urlencode(parameters)
-        print parameters
         request = urllib2.Request(self.end_point)
         response = urllib2.urlopen(request, parameters, timeout)
+
 
         try:
             return Response(response)

@@ -22,10 +22,11 @@ def grap_domains(pagenum):
     lock.acquire()
     print pagenum
     insertDatas = []
-    url = 'http://www.juming.com/6/index.htm?cha=1&page='+str(pagenum)+'&scsj=2017-8-17&ymcd_1=1&ymcd_2=8'
+    url = 'http://www.juming.com/6/index.htm?cha=1&page='+str(pagenum)+'&scsj=yi&ymcd_1=1&ymcd_2=7&ymhz=com,org,cn'
     print url
     headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'}
-    resp = requests.get(url,cookies = cookies,headers=headers).text
+    jmsession = requests.session()
+    resp = jmsession.get(url,cookies = cookies,headers=headers).text
     pattern = re.compile('<input value="(.*?)".*?type="checkbox">',re.S)
     items = re.findall(pattern,resp)
     if not items:
@@ -46,12 +47,12 @@ for line in f.read().split(';'):   #按照字符：进行划分读取
 f.close()
 
 
-l = [x for x in range(1,666)]
+l = [x for x in range(358,483)]
 
 
-pool = threadpool.ThreadPool(10)
+pool = threadpool.ThreadPool(5)
 rqs = threadpool.makeRequests(grap_domains,l)
 
 [pool.putRequest(req) for req in rqs]
 pool.wait()
-pool.dismissWorkers(10,do_join=True)
+pool.dismissWorkers(5,do_join=True)

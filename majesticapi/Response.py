@@ -27,7 +27,8 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+#/usr/bin/env python
+#-*-coding:utf-8-*-
 import DataTable
 from DataTable import *
 from xml.sax import handler
@@ -112,7 +113,6 @@ class Handler(handler.ContentHandler):
             for attr_name in attrs.getNames():
                 self.response.params[attr_name] = attrs.getValue(attr_name)
         if (name == 'DataTable'):
-            print name
             self.data_table = DataTable()
             self.data_table.set_table_name(attrs.getValue('Name'))
             self.data_table.set_table_headers(attrs.getValue('Headers'))

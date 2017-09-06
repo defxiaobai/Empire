@@ -29,7 +29,7 @@ def get_page(url, charcode):
 def get_content(url):
     global tentTool
     page = get_page(url,'gbk')
-    pattern = re.compile('<div class="font_14" style="line-height:180%;">(.*?)</div>',re.S)
+    pattern = re.compile('<div class="font_14" style="line-height:180%;">(.*?)<div class="height_15"></div>',re.S)
     result = re.search(pattern,page)
     if not result:
         text = ''
@@ -37,6 +37,7 @@ def get_content(url):
         content = result.group(1).strip()
         text = tentTool.remove_tags(content)
         print text
+        print '--------------------------------------'
         # print content
     pattern = re.compile('<div class="font_22 font_b" align="center">(.*?)</div>')
     result = re.search(pattern,page)
@@ -63,7 +64,7 @@ def postData(title, smalltext, text, keyboard):
         'title': title,
         'keyboard': keyboard,
         'smalltext': smalltext,
-        'infotags': '特区彩票七星彩论坛,南国彩票七星彩论坛',
+        'infotags': '特区彩票七星彩论坛,南国彩票论坛',
         'newstext': text,
         'pw': '123456'
 
@@ -75,7 +76,7 @@ def postData(title, smalltext, text, keyboard):
         print '成功'
 
 # 获取urls
-def get_urls(start,end):
+def get_urls(start,end,jqnum=0):
     url = 'http://www.tqcp.net/index.php?m=content&c=index&a=lists&catid=6&page='
     for x in range(start,end+1):
         url = url + str(x)
@@ -87,10 +88,13 @@ def get_urls(start,end):
         else:
             pattern = re.compile('<a target=_blank href="(.*?)">.*?</a>')
             items = re.findall(pattern,result.group(1).strip())
+            if jqnum != 0:
+                items = items[0:jqnum]
             for item in items:
+                # print item
                 get_content(item)
                 # exit()
             print '-------'
 
 
-get_urls(6,6)
+get_urls(1,1,14)
