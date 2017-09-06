@@ -3,7 +3,7 @@
 import urllib2
 import urllib
 import re
-import TentTool
+import QqTool
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -11,7 +11,7 @@ sys.setdefaultencoding('utf-8')
 class Ten(object):
 
     def __init__(self,domain,username,classid):
-        self.tentTool = TentTool.TentTool()
+        self.tentTool = QqTool.TentTool()
         self._jiekouurl = 'http://' + domain + '/e/admin/jiekou.php'
         self._username = username
         self._classid = classid
@@ -93,7 +93,7 @@ class Ten(object):
             'title': title,
             'keyboard':keyboard,
             'smalltext':smalltext,
-            'infotags':'腾讯电脑管家电脑版,最新电脑管家官方下载',
+            'infotags':'电脑管家官方下载,腾讯电脑管家官方下载',
             'newstext': text,
             'pw': '123456'
 
@@ -104,22 +104,23 @@ class Ten(object):
         if '成功' in resp.read():
             print '成功'
 
+    def grap_data(self,startNo,endNo,jqnum):
 
-    def grap_data(self,startNo,endNo):
         for x in range(startNo,endNo+1):
             if x == 1:
-                url = 'https://guanjia.qq.com/news/n3/index.html'
+                url = 'https://guanjia.qq.com/news/n2/index.html'
             else:
-                url = 'https://guanjia.qq.com/news/n3/list_3_'+str(x)+'.html'
-            print url
+                url = 'https://guanjia.qq.com/news/n2/list_2_'+str(x)+'.html'
+            # print url
             page = self.get_page(url,'utf-8')
             urls = self.get_urls(page)
+            urls = urls[0:jqnum]
             contents = self.get_contents(urls)
             for content in contents:
                 print content['title'],content['smalltext'],content['newstext'],content['keyboard']
                 print '------------'
                 self.postData(content['title'],content['smalltext'],content['newstext'],content['keyboard'])
 
-# 指定域名，用户名，栏目id
+# # 指定域名，用户名，栏目id
 ten = Ten('www.bayuad.com','hsmw',2)
-ten.grap_data(2,10)
+ten.grap_data(1,1,9)
