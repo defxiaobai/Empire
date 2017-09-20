@@ -9,22 +9,19 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 tentTool = TentTool.TentTool()
-
+urllib2.socket.setdefaulttimeout(30)
 # 获取页面内容 指定网站编码
-def get_page(url, charcode):
+def get_page(url, charcode,num=3):
     header = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.2) Gecko/2008070208 Firefox/3.0.1'}
     try:
         request = urllib2.Request(url, headers=header)
-        page = urllib2.urlopen(request)
-    except urllib2.URLError as e:
-        if hasattr(e, 'reason'):
-            print '获取页面错误，错误原因：%s' % e.reason
-            return None
-        if hasattr(e, 'code'):
-            print '获取页面错误，错误代码：%s' % e.code
-            return None
-    else:
+        page = urllib2.urlopen(request,timeout=30)
         return page.read().decode(charcode)
+    except urllib2.URLError as e:
+        print "error", e.reason  # 可以捕获异常
+        if num > 0:
+            if hasattr(e, 'code') and 500 <= e.code < 600:
+                get_page(url,charcode,num - 1)
 
 def get_content(url):
     global tentTool
@@ -60,11 +57,11 @@ def postData(title, smalltext, text, keyboard):
     jiekou = 'http://www.jdms8.com/e/admin/jiekou.php'
     data = urllib.urlencode({
         'username': 'yeqiu',
-        'classid': 2,
+        'classid': 5,
         'title': title,
         'keyboard': keyboard,
         'smalltext': smalltext,
-        'infotags': '特区彩票七星彩论坛,南国彩票论坛',
+        'infotags': '彩票预测',
         'newstext': text,
         'pw': '123456'
 
@@ -76,15 +73,19 @@ def postData(title, smalltext, text, keyboard):
         print '成功'
 
 # 获取urls
-def get_urls(start,end,jqnum=0):
-    url = 'http://www.tqcp.net/index.php?m=content&c=index&a=lists&catid=6&page='
+def get_urls(catid,start,end,jqnum=0):
+
     for x in range(start,end+1):
+        url = 'http://www.tqcp.net/index.php?m=content&c=index&a=lists&catid=' + str(catid) + '&page='
+        print x
         url = url + str(x)
+        print url
         page = get_page(url,'gbk')
         pattern = re.compile('<div class="General_News">(.*?)<div class="Content_shixian">',re.S)
         result = re.search(pattern,page)
         if not result:
             print None
+            exit()
         else:
             pattern = re.compile('<a target=_blank href="(.*?)">.*?</a>')
             items = re.findall(pattern,result.group(1).strip())
@@ -93,8 +94,13 @@ def get_urls(start,end,jqnum=0):
             for item in items:
                 # print item
                 get_content(item)
+                print str(x) + '-------'
                 # exit()
-            print '-------'
 
 
-get_urls(1,1,14)
+
+get_urls(11,1771,3874)
+
+
+
+
