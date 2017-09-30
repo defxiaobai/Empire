@@ -28,7 +28,11 @@ def get_page(url):
 #查询出来搜索结果
 def search(key,limit=10):
     search_url='http://www.baidu.com/s?wd=key&rsv_bp=0&rsv_spt=3&rsv_n=2&inputT=6391'
-    search_url=search_url.replace('key',key)
+    search_url=search_url.replace('key','site:'+ key)
+    try:
+        f = open(key+'.txt', 'w+')
+    except IOError, e:
+        print '打开文件失败', e.args[0], e.args[1]
     html=get_page(search_url)
     soup=BeautifulSoup(html,"html.parser")
     resultNumPattern = re.compile("<b>找到相关结果数约(.*?)个</b>")
@@ -60,12 +64,18 @@ def search(key,limit=10):
     for r in re_dict:
         target_url = re_dict[r]
         print target_url
-        response = urllib2.urlopen(target_url)
-        realurl = response.geturl()
-        print(realurl)
-        print '....................\n'
+        try:
+            response = urllib2.urlopen(target_url)
+            r_code = response.getcode()
+            if r_code == 200:
+                realurl = response.geturl()
+                f.write(realurl)
+                f.write('\n')
+                print '....................\n'
+        except urllib2.HTTPError,e:
+            print e.code
 
 
 if __name__=='__main__':
-        key='site:www.safeken.com'
+        key='www.51huamoo.com'
         search(key)

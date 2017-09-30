@@ -36,7 +36,7 @@ class tomsql(object):
     def createTableTfCf(self,t_name):
         sql = """CREATE TABLE """+ t_name +""" (
                  id int(11) unsigned not null AUTO_INCREMENT,
-                 domain  CHAR(20) NOT NULL,
+                 domain  CHAR(40) NOT NULL,
                  tf char(5) not null,
                  cf char(5) not null,
                  PRIMARY KEY(id)
