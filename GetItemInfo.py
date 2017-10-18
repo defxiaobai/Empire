@@ -48,7 +48,8 @@ if (__name__ == '__main__'):
         if (response.is_ok()):
             # print the results table
             results = response.get_table_for_name('Results')
-            print len(results.rows)
+            print results.rows
+
             r_dict = []
             for row in results.rows:
                 item = row['Item']
